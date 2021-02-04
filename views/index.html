@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自建图床服务</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/iview/3.5.5-rc.1/styles/iview.min.css" rel="stylesheet">
+  <script type="text/javascript" src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+  <script type="text/javascript" src="https://cdn.bootcss.com/iview/3.4.2-rc.1/iview.min.js"></script>
+  <script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/qs/6.9.4/qs.min.js"></script>
+</head>
+<style>
+.image-container {
+  position:relative;
+  width:200px;
+  height:200px;
+  display: inline-block;
+  margin-right:15px;
+  margin-top:35px
+}
+.image-container img {
+  width:100%;
+  height:100%;
+  object-fit: cover;
+}
+.image-container .delete{
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 50px;
+}
+</style>
+<body>
+  <div id="app">
+    <Row>
+      <i-col span="5">
+        <Card style="width:320px">
+          <div style="text-align:center">
+            <Upload
+              ref="upload"
+              :show-upload-list="true"
+              :format="['jpg','jpeg','png']"
+              multiple
+              type="drag"
+              action="/upload"
+                >
+                <div style="padding: 20px 0">
+                  <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+                  <p>点击或者拖拽上传</p>
+                </div>
+            </Upload>
+            <h3>本地上传</h3>
+          </div>
+        </Card>
+        <Card style="width:320px;margin-top:100px">
+          <div style="text-align:center">
+            <i-input v-model="networkSrc" type="textarea" :autosize="{minRows: 4,maxRows: 5}" placeholder="输入地址..." ></i-input>
+            <h3>网络连接</h3>
+            <i-button type="dashed" @click="submitSrc">确定</i-button>
+          </div>
+        </Card>
+      </i-col>
+      <i-col span="19">
+        <div class="image-container" v-for="item in imgList">
+            <i class="delete ivu-icon ivu-icon-md-close" @click="handleDelete(item.key)"></i>
+            <img :src="item.src" alt="">
+             <textarea rows="4" cols="30">{{item.src}}</textarea>
+        </div>
+      </i-col>
+   </Row>
+  </div>
+</body>
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      imgList:[],
+      prefix:'https://img-bed-1302216408.cos.ap-guangzhou.myqcloud.com/',
+      networkSrc: 'https://pic4.zhimg.com/v2-4bba972a094eb1bdc8cbbc55e2bd4ddf_1440w.jpg?source=172ae18b'
+    },
+    mounted() {
+      this.getImageLists()
+    },
+    methods: {
+      submitSrc() {
+        axios.post('/upload',Qs.stringify({
+          imgSrc: this.networkSrc
+        })).then(({status,data}) => {
+          if (status === 200 && data.code === 0) {
+            this.$Message.success('上传成功');
+            this.getImageLists()
+          } else {
+            this.$Message.error('上传失败');
+          }
+        })
+        // https://pic4.zhimg.com/v2-4bba972a094eb1bdc8cbbc55e2bd4ddf_1440w.jpg?source=172ae18b
+      },
+      getImageLists() {
+        axios.get('/list').then(({status,data}) => {
+          if (status === 200 && data.code === 0) {
+            let {list} = data.data
+            this.imgList =  list.map((v) => {
+              return {
+                src: this.prefix+v.Key,
+                key:v.Key
+              }
+            })
+          }
+        })
+      },
+      handleDelete(key) {
+        axios.get('/delete',{
+          params:{
+            key
+          }
+        }).then(({status,data}) => {
+          if (status === 200 && data.code === 0) {
+            this.$Message.success('删除成功');
+            this.getImageLists()
+          } else {
+            this.$Message.error('删除失败');
+          }
+          
+        })
+      }
+    }
+  })
+</script>
+</html>

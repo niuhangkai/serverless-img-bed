@@ -64,12 +64,11 @@ class Upload {
           }))
         })
         await requestPromise
-        file = fs.readFileSync(path.resolve(__dirname, tmpPath)) /**'../public/uploads/image.jpg' */
+        file = fs.readFileSync(path.resolve(__dirname, tmpPath))
       } else {
         file = fs.readFileSync(ctx.request.files.file.path)
         postfix = ctx.request.files.file.type.split('/')[1]
       }
-      
       // 将图片转为base64在转为Buffer流
       const dataBuffer = new Buffer.from(file, 'base64');
       const requestPromise = new Promise((resolve,reject) => {

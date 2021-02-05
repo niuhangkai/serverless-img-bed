@@ -45,6 +45,7 @@
               :format="['jpg','jpeg','png']"
               multiple
               type="drag"
+              :on-success="handleSuccess"
               action="/upload"
                 >
                 <div style="padding: 20px 0">
@@ -110,6 +111,9 @@
             })
           }
         })
+      },
+      handleSuccess() {
+        this.getImageLists()
       },
       handleDelete(key) {
         axios.get('/delete',{

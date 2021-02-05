@@ -13,8 +13,14 @@ const KoaStatic = require('koa-static')
 const path =  require('path')
 // error handler
 onerror(app)
+let dir
+if (process.env.SERVERLESS == 1) {
+  dir = path.resolve(__dirname,'/tmp')
+} else {
+  dir = path.resolve(__dirname,'./public/uploads')
+}
 app.use(KoaBody({multipart:true, formidable:{
-  uploadDir:path.join(__dirname,'/public/uploads'), // 设置上传目录
+  uploadDir:dir, // 设置上传目录
   keepExtensions: true   // 保留拓展名
 }}))
 // middlewares

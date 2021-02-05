@@ -49,17 +49,22 @@ class Upload {
     // 上传接口
     async upload(ctx) {
     // 获取上传的图片,imgSrc参数存在为网络连接
-      let file,postfix
+      let file,postfix,tmpPath
       if (ctx.request.body.imgSrc) {
         postfix='jpg'
         const requestPromise = new Promise((resolve,reject) => {
-          request(ctx.request.body.imgSrc).pipe(fs.createWriteStream('./public/uploads/image.jpg').on('finish',() => {
+          // 云函数写入只能写入到tmp的临时文件夹中
+          if (process.env.SERVERLESS == 1) {
+            tmpPath = '/tmp/image.jpg'
+          } else {
+            tmpPath = '../public/uploads/image.jpg'
+          }
+          request(ctx.request.body.imgSrc).pipe(fs.createWriteStream(path.resolve(__dirname, tmpPath)).on('finish',() => {
             resolve(true)
           }))
         })
         await requestPromise
-        file = fs.readFileSync(path.resolve(__dirname, '../public/uploads/image.jpg'))
-       
+        file = fs.readFileSync(path.resolve(__dirname, tmpPath)) /**'../public/uploads/image.jpg' */
       } else {
         file = fs.readFileSync(ctx.request.files.file.path)
         postfix = ctx.request.files.file.type.split('/')[1]
@@ -102,13 +107,15 @@ class Upload {
           }
         }
       }
-    // 上传完成清空上传的文件夹
-    let tmpUploadPath = '../public/uploads'
-    const images = fs.readdirSync(path.resolve(__dirname,tmpUploadPath));
-    images.forEach((v) => {
-      let imagePath = path.resolve(__dirname,`${tmpUploadPath}/${v}`)
-      fs.unlinkSync(imagePath); 
-    })
+    //  上传完成清空上传的文件夹 本地测试
+    if (process.env.SERVERLESS != 1) {
+      let tmpUploadPath = '../public/uploads'
+      const images = fs.readdirSync(path.resolve(__dirname,tmpUploadPath));
+      images.forEach((v) => {
+        let imagePath = path.resolve(__dirname,`${tmpUploadPath}/${v}`)
+        fs.unlinkSync(imagePath); 
+      })
+    }
   }
   // 删除单个cos对象
   async deleteCos(ctx) {

@@ -14,15 +14,23 @@ inputs:
   runtime: Nodejs10.15
   apigatewayConf:
     protocols:
-      - http
       - https
     environment: release
     serviceTimeout: 60
+    customDomains:
+      - domain: upload.niuhk.cn
+        certificateId: j6OBq7dR
+        isDefaultMapping: false
+        pathMappingSet:
+          - path: /
+            environment: release
+        protocols:
+          - https
     autoCreateDns: false
   isAutoCiDeploy: false
   functionConf:
     eip: false
-    timeout: 3
+    timeout: 30
     memorySize: 128
   # layers:
   #   - name: '${output:${stage}:${app}:test-layer.name}'

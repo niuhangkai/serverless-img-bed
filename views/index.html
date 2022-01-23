@@ -103,14 +103,19 @@
         axios.get('/list').then(({status,data}) => {
           if (status === 200 && data.code === 0) {
             let {list} = data.data
-            this.imgList =  list.map((v) => {
+            this.imgList  =  list.map((v) => {
               return {
                 src: this.prefix+v.Key,
-                key:v.Key
+                key:v.Key,
+                date:this.toTimestamp(v.LastModified)
               }
-            })
+            }).sort((a,b) => b.date - a.date)
+            console.log(this.imgList)
           }
         })
+      },
+      toTimestamp(str) {
+        return new Date(str).getTime()
       },
       handleSuccess() {
         this.getImageLists()

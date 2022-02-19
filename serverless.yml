@@ -19,7 +19,7 @@ inputs:
     serviceTimeout: 60
     customDomains:
       - domain: upload.niuhk.cn
-        certificateId: j6OBq7dR
+        certificateId: rkJyqyPL
         isDefaultMapping: false
         pathMappingSet:
           - path: /
